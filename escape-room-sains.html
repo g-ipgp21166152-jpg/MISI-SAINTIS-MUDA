@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MISI SAINTIS MUDA - SAINSBESTT</title>
+    <style>
+        /* CSS - GAYA VISUAL & ANIMASI */
+        :root {
+            --primary-blue: #2196F3;
+            --primary-green: #4CAF50;
+            --accent-yellow: #FFEB3B;
+            --danger-red: #f44336;
+            --card-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: var(--font-main);
+            background-color: #f0f4f8;
+            overflow-x: hidden;
+        }
+
+        /* Skrin Utama / Intro */
+        #intro-screen, #game-screen, #final-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #intro-screen {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 10px #000;
+        }
+
+        .btn-large {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-large:hover {
+            transform: scale(1.1);
+            background-color: #45a049;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 80%;
+            background-color: #ddd;
+            border-radius: 20px;
+            margin: 20px 0;
+            height: 25px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            border-radius: 20px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Kad Soalan */
+        .station-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            max-width: 600px;
+            width: 90%;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-blue);
+            background-color: #e3f2fd;
+        }
+
+        /* Kod Akhir & Sijil */
+        #final-code-input {
+            padding: 15px;
+            font-size: 2rem;
+            text-transform: uppercase;
+            text-align: center;
+            letter-spacing: 5px;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        #certificate {
+            background: white;
+            padding: 40px;
+            border: 10px double var(--primary-blue);
+            max-width: 700px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .element-icons {
+            font-size: 2rem;
+            margin: 10px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Confetti Effect */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="click-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="success-sound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <audio id="fail-sound" src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3"></audio>
+
+    <div id="intro-screen">
+        <h1 class="hero-title">⚡ MISI SAINTIS MUDA 🧪</h1>
+        <p style="font-size: 1.2rem; max-width: 600px;">
+            "Makmal sains sekolah telah dikunci secara automatik selepas berlaku kesilapan eksperimen! 
+            Kamu perlu menyelesaikan 10 cabaran Kemahiran Proses Sains untuk mendapatkan kod rahsia 
+            <strong>SAINSBESTT</strong> dan membuka pintu makmal!"
+        </p>
+        <button class="btn-large" onclick="startGame()">👉 MULAKAN MISI</button>
+        <div class="element-icons">⚡ 🌪️ 🌊 🌱 🔥</div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="progress-container" id="p-container">
+            <div class="progress-bar" id="p-bar"></div>
+        </div>
+        <div id="station-container"></div>
+    </div>
+
+    <div id="code-screen" class="hidden" style="text-align: center; padding-top: 50px;">
+        <h2>MASUKKAN KOD RAHSIA</h2>
+        <input type="text" id="final-code-input" placeholder="_ _ _ _ _ _ _ _ _ _" maxlength="10">
+        <br>
+        <button class="btn-large" onclick="checkFinalCode()">BUKA PINTU 🔓</button>
+    </div>
+
+    <div id="final-screen" class="hidden">
+        <div id="certificate">
+            <h1 style="color: var(--primary-blue);">SIJIL PENCAPAIAN</h1>
+            <p>Dianugerahkan kepada:</p>
+            <h2 id="student-name-display">[Nama Murid]</h2>
+            <hr>
+            <h3>Anugerah <span id="rank-title"></span></h3>
+            <p>Misi: Escape Room SAINSBESTT Tahun 5</p>
+            <p>Skor: <span id="final-score">0</span>/100</p>
+            <div class="element-icons">⚡ 🌱 🧪 🔬</div>
+            <p><small>Direka oleh Cikgu Mar</small></p>
+        </div>
+        <button class="btn-large" onclick="location.reload()" style="margin-top: 20px;">Main Semula 🔄</button>
+    </div>
+
+    <script>
+        // DATA SOALAN
+        const stations = [
+            { q: "Ali mengkaji kesan jumlah baja terhadap tinggi pokok kacang. Apakah PM dan PB?", a: "B", options: ["PM Tinggi | PB Baja", "PM Baja | PB Tinggi", "PM Tanah | PB Tinggi", "PM Air | PB Cahaya"], hint: "S", fail: "PM ialah perkara yang diubah, dan PB ialah perkara yang kita perhatikan." },
+            { q: "Berdasarkan data eksperimen, pilih hipotesis paling tepat?", a: "B", options: ["Pokok tinggi", "Semakin banyak baja, semakin tinggi pokok", "Baja penting", "Pokok membesar"], hint: "A" },
+            { q: "Pemerhatian: Pokok tanpa baja berwarna kuning dan terbantut. Berikan inferens.", a: "B", options: ["Pokok itu kecil dan kuning.", "Pokok kekurangan nutrien kerana tidak menerima baja.", "Pokok itu kering", "Pokok itu mati"], hint: "I" },
+            { q: "Dalam graf sains, apakah pemboleh ubah yang biasanya berada di Paksi-X?", a: "B", options: ["Paksi X ialah Tinggi", "Paksi X ialah Jumlah Baja (PM)", "Tiada unit tak apa", "Tajuk tak penting"], hint: "N" },
+            { q: "Dalam eksperimen mengkaji jenis baja, apakah pemboleh ubah dimalarkan?", a: "C", options: ["Tinggi", "Jenis baja", "Jumlah air & cahaya", "Masa"], hint: "S" },
+            { q: "Tujuan eksperimen yang paling tepat adalah...", a: "B", options: ["Menanam pokok", "Mengkaji kesan cahaya terhadap pertumbuhan", "Melihat pokok", "Menyiram pokok"], hint: "B" },
+            { q: "Data suhu menunjukkan penurunan. Apakah kesimpulan yang tepat?", a: "B", options: ["Suhu naik", "Suhu turun bila masa bertambah", "Tiada perubahan", "Air panas selamanya"], hint: "E" },
+            { q: "Carta palang menunjukkan Bala (10 buku) dan Dina (10 buku). Siapa paling banyak?", a: "B", options: ["Ali", "Bala & Dina", "Chong", "Semua sama"], hint: "S" },
+            { q: "Air di dalam gelas berkurang selepas 2 jam di bawah matahari. Inferens?", a: "B", options: ["Tumpah", "Tersejat akibat haba", "Hilang", "Gelas bocor"], hint: "T" },
+            { q: "Pilih hipotesis yang lengkap dan saintifik.", a: "B", options: ["Ais cair", "Jika ais dibiarkan lama, maka lebih banyak mencair", "Ais sejuk", "Suhu ada kesan"], hint: "T" }
+        ];
+
+        let currentStation = 0;
+        let score = 0;
+        let collectedLetters = [];
+        let userName = "";
+
+        // Fungsi Bunyi
+        function playSound(id) {
+            const sfx = document.getElementById(id);
+            sfx.currentTime = 0;
+            sfx.play();
+        }
+
+        function startGame() {
+            userName = prompt("Masukkan nama anda, Saintis Muda:");
+            if (!userName) userName = "Wira Sains";
+            
+            playSound('click-sound');
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('p-container').style.display = 'block';
+            showStation();
+        }
+
+        function showStation() {
+            if (currentStation < stations.length) {
+                const data = stations[currentStation];
+                const html = `
+                    <div class="station-card" id="card" style="display:block">
+                        <h3>STESEN ${currentStation + 1}</h3>
+                        <p style="font-size: 1.2rem;">${data.q}</p>
+                        <div class="options-grid">
+                            ${data.options.map((opt, i) => `
+                                <button class="option-btn" onclick="checkAnswer('${String.fromCharCode(65 + i)}')">
+                                    ${String.fromCharCode(65 + i)}. ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('station-container').innerHTML = html;
+                updateProgress();
+            } else {
+                showCodeScreen();
+            }
+        }
+
+        function checkAnswer(choice) {
+            const data = stations[currentStation];
+            if (choice === data.a) {
+                playSound('success-sound');
+                score += 10;
+                collectedLetters.push(data.hint);
+                alert("Tahniah! Anda mendapat huruf: " + data.hint);
+                currentStation++;
+                showStation();
+            } else {
+                playSound('fail-sound');
+                alert(data.fail || "Jawapan kurang tepat. Cuba lagi!");
+            }
+        }
+
+        function updateProgress() {
+            const percent = (currentStation / stations.length) * 100;
+            document.getElementById('p-bar').style.width = percent + "%";
+        }
+
+        function showCodeScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('code-screen').classList.remove('hidden');
+        }
+
+        function checkFinalCode() {
+            const input = document.getElementById('final-code-input').value.toUpperCase();
+            if (input === "SAINSBESTT") {
+                playSound('success-sound');
+                showFinalScreen();
+                createConfetti();
+            } else {
+                playSound('fail-sound');
+                alert("Kod tidak tepat. Semak semula stesen anda! (Petunjuk: " + collectedLetters.join('') + ")");
+            }
+        }
+
+        function showFinalScreen() {
+            document.getElementById('code-screen').classList.add('hidden');
+            document.getElementById('final-screen').classList.remove('hidden');
+            document.getElementById('student-name-display').innerText = userName;
+            document.getElementById('final-score').innerText = score;
+
+            let rank = "";
+            let icon = "";
+            if (score >= 90) { rank = "Saintis Hebat ⚡"; icon = "⚡"; }
+            else if (score >= 70) { rank = "Saintis Berkembang 🌱"; icon = "🌱"; }
+            else if (score >= 50) { rank = "Saintis Muda 🧪"; icon = "🧪"; }
+            else { rank = "Perlu Latihan Tambahan 🔬"; icon = "🔬"; }
+
+            document.getElementById('rank-title').innerText = rank;
+        }
+
+        // Animasi Confetti Ringan
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const conf = document.createElement('div');
+                conf.classList.add('confetti');
+                conf.style.left = Math.random() * 100 + "vw";
+                conf.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                conf.style.top = "-10px";
+                conf.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(conf);
+
+                const animation = conf.animate([
+                    { top: "-10px", opacity: 1 },
+                    { top: "100vh", opacity: 0 }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    easing: 'linear'
+                });
+                animation.onfinish = () => conf.remove();
+            }
+        }
+    </script>
+</body>
+</html>
